@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Generic Flashcards</title>
+  <style>
+    /* --- Color Variables and Basic Resets --- */
+    :root {
+      --primary-blue: #4169e1;
+      --light-gray: #f0f0f0;
+      --white: #ffffff;
+      --font-main: 'Poppins', sans-serif;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: var(--font-main);
+      background: var(--light-gray);
+      color: var(--primary-blue);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    /* --- Panels (Import vs Study) --- */
+    .panel {
+      background: var(--white);
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      padding: 20px;
+      width: 360px;
+      max-width: 90%;
+      margin-bottom: 20px;
+    }
+    /* Hide panels until active */
+    #study-panel {
+      display: none;
+    }
+
+    /* --- Headings and Buttons --- */
+    h1, h2 {
+      text-align: center;
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
+    button {
+      font-family: var(--font-main);
+      font-weight: 600;
+      background: var(--primary-blue);
+      color: var(--white);
+      border: none;
+      border-radius: 4px;
+      padding: 10px;
+      width: 100%;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+    button:hover {
+      background: #27408B;
+      transform: scale(1.02);
+    }
+    button:active {
+      transform: scale(0.98);
+    }
+
+    /* --- Import Screen Styles --- */
+    #import-text {
+      width: 100%;
+      height: 200px;
+      padding: 8px;
+      border: 2px solid var(--primary-blue);
+      border-radius: 4px;
+      font-size: 1rem;
+      resize: vertical;
+      margin-bottom: 12px;
+    }
+    #import-note {
+      font-size: 0.9rem;
+      margin-bottom: 12px;
+      text-align: center;
+      color: #333;
+    }
+
+    /* --- Study Screen Styles --- */
+    #progress-info {
+      text-align: center;
+      font-size: 0.9rem;
+      margin-bottom: 12px;
+    }
+    .card-container {
+      perspective: 1000px;
+      margin-bottom: 16px;
+    }
+    .card {
+      width: 320px;
+      max-width: 100%;
+      height: 200px;
+      margin: 0 auto;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s;
+      cursor: pointer;
+    }
+    .card.flipped {
+      transform: rotateY(180deg);
+    }
+    .card-side {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: 2px solid var(--primary-blue);
+      border-radius: 12px;
+      background: var(--white);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+      padding: 12px;
+      font-size: 1.2rem;
+      font-weight: 500;
+      text-align: center;
+    }
+    .card-side.back {
+      transform: rotateY(180deg);
+      background: var(--primary-blue);
+      color: var(--white);
+    }
+
+    /* --- Star Icon Below Card --- */
+    #star-container {
+      text-align: center;
+      margin-top: 8px;
+    }
+    .star {
+      font-size: 1.5rem;
+      cursor: pointer;
+      user-select: none;
+      color: #ccc;
+      transition: color 0.2s, transform 0.1s;
+    }
+    .star.favorited {
+      color: gold;
+      transform: scale(1.1);
+    }
+
+    /* --- Navigation Buttons --- */
+    .nav-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .nav-buttons button {
+      width: auto;
+      padding: 8px 16px;
+      font-size: 0.95rem;
+    }
+
+    /* --- End-Of-Set Options --- */
+    #end-options {
+      display: none;
+      margin-top: 16px;
+      text-align: center;
+    }
+    #end-options button {
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ====================== -->
+  <!-- 1) Import Screen -->
+  <!-- ====================== -->
+  <div id="import-panel" class="panel">
+    <h1>Import Flashcard Data</h1>
+    <div id="import-note">
+      Paste two‐column data here (e.g., copy/paste from Google Sheets).<br />
+      Separate columns by <strong>tabs</strong> (or commas if no tabs).
+    </div>
+    <textarea id="import-text" placeholder="Front[TAB]Back&#10;Front2[TAB]Back2&#10;..."></textarea>
+    <button id="import-btn">Import Cards</button>
+  </div>
+
+  <!-- ====================== -->
+  <!-- 2) Study Screen -->
+  <!-- ====================== -->
+  <div id="study-panel" class="panel">
+    <h2>Study Your Cards</h2>
+    <div id="progress-info">0 of 0</div>
+    <div class="card-container" id="card-area">
+      <div class="card" id="flashcard">
+        <div class="card-side front" id="card-front">Front Side</div>
+        <div class="card-side back" id="card-back">Back Side</div>
+      </div>
+    </div>
+    <div id="star-container">
+      <span id="star-icon" class="star">&#9734;</span> <!-- ☆ by default -->
+    </div>
+    <div class="nav-buttons" id="nav-area">
+      <button id="prev-btn">← Previous</button>
+      <button id="next-btn">Next →</button>
+    </div>
+    <!-- End-of-Set Options -->
+    <div id="end-options">
+      <button id="restart-btn">Restart</button>
+      <button id="main-menu-btn">Main Menu</button>
+      <button id="study-stars-btn">Study Stars</button>
+    </div>
+  </div>
+
+
+  <script>
+    // ================================
+    // DATA STRUCTURES & UI REFERENCES
+    // ================================
+    let allCards = [];      // [{ front, back, favorited }]
+    let available = [];     // cards left to show
+    let history = [];       // cards already shown in this session
+    let currentIndex = -1;  // index in history
+    const importPanel = document.getElementById('import-panel');
+    const studyPanel  = document.getElementById('study-panel');
+    const importText  = document.getElementById('import-text');
+    const importBtn   = document.getElementById('import-btn');
+
+    const progressInfo = document.getElementById('progress-info');
+    const flashcard    = document.getElementById('flashcard');
+    const frontEl      = document.getElementById('card-front');
+    const backEl       = document.getElementById('card-back');
+    const starIcon     = document.getElementById('star-icon');
+    const prevBtn      = document.getElementById('prev-btn');
+    const nextBtn      = document.getElementById('next-btn');
+    const cardArea     = document.getElementById('card-area');
+    const navArea      = document.getElementById('nav-area');
+    const endOptions   = document.getElementById('end-options');
+    const restartBtn   = document.getElementById('restart-btn');
+    const mainMenuBtn  = document.getElementById('main-menu-btn');
+    const studyStarsBtn = document.getElementById('study-stars-btn');
+
+    // ====================
+    // IMPORT BUTTON LOGIC
+    // ====================
+    importBtn.addEventListener('click', () => {
+      const raw = importText.value.trim();
+      if (!raw) {
+        alert('Please paste some two‐column data first.');
+        return;
+      }
+
+      // Parse each non-empty line into { front, back, favorited:false }
+      const lines = raw.split(/\r?\n/).filter(l => l.trim());
+      allCards = lines.map(line => {
+        // Try splitting on tab first
+        let parts = line.split('\t');
+        if (parts.length < 2) {
+          // fallback to splitting on comma
+          parts = line.split(',');
+        }
+        const front = parts[0].trim();
+        const back  = parts.slice(1).join(',').trim(); // in case back contains commas
+        return { front, back, favorited: false };
+      });
+
+      if (allCards.length === 0) {
+        alert('No valid lines found. Make sure each line has at least two columns.');
+        return;
+      }
+
+      // Initialize study pools
+      available = shuffleArray(allCards.slice());
+      history = [];
+      currentIndex = -1;
+
+      // Switch to study screen
+      importPanel.style.display = 'none';
+      studyPanel.style.display  = 'block';
+
+      // Show first card
+      drawNextCard();
+    });
+
+    // ============================
+    // DRAW NEXT CARD OR SHOW OPTIONS
+    // ============================
+    function drawNextCard() {
+      // If user has unused history (e.g. after clicking "Previous")
+      if (currentIndex < history.length - 1) {
+        currentIndex++;
+        updateCardDisplay();
+        updateProgress();
+        return;
+      }
+
+      // If no more cards to draw
+      if (available.length === 0) {
+        showEndOptions();
+        return;
+      }
+
+      // Otherwise, draw a random available card
+      const idx = Math.floor(Math.random() * available.length);
+      const card = available.splice(idx, 1)[0];
+      history.push(card);
+      currentIndex = history.length - 1;
+      updateCardDisplay();
+      updateProgress();
+    }
+
+    // ======================
+    // SHOW END-OF-SET OPTIONS
+    // ======================
+    function showEndOptions() {
+      // Hide card area and nav while showing buttons
+      cardArea.style.display = 'none';
+      navArea.style.display  = 'none';
+      starIcon.style.display = 'none';
+      endOptions.style.display = 'block';
+    }
+
+    // =========================
+    // HANDLE END-OF-SET BUTTONS
+    // =========================
+    restartBtn.addEventListener('click', () => {
+      endOptions.style.display    = 'none';
+      cardArea.style.display      = 'block';
+      navArea.style.display       = 'flex';
+      starIcon.style.display      = 'inline-block';
+      // Refill with full set
+      available = shuffleArray(allCards.slice());
+      history = [];
+      currentIndex = -1;
+      drawNextCard();
+    });
+    mainMenuBtn.addEventListener('click', () => {
+      location.reload();
+    });
+    studyStarsBtn.addEventListener('click', () => {
+      const stars = allCards.filter(c => c.favorited);
+      if (stars.length === 0) {
+        alert('No cards have been starred.');
+        return;
+      }
+      endOptions.style.display    = 'none';
+      cardArea.style.display      = 'block';
+      navArea.style.display       = 'flex';
+      starIcon.style.display      = 'inline-block';
+      // Refill with only starred cards
+      available = shuffleArray(stars.slice());
+      history = [];
+      currentIndex = -1;
+      drawNextCard();
+    });
+
+    // ======================    
+    // UPDATE CARD CONTENT
+    // ======================
+    function updateCardDisplay() {
+      const card = history[currentIndex];
+      flashcard.classList.remove('flipped');
+      frontEl.textContent = card.front;
+      backEl.textContent  = card.back;
+      updateStarIcon(card.favorited);
+    }
+
+    // =========================
+    // UPDATE PROGRESS TEXT
+    // =========================
+    function updateProgress() {
+      const totalSeen = history.length;
+      const total    = totalSeen + available.length;
+      progressInfo.textContent = `${totalSeen} of ${total}`;
+    }
+
+    // ============================
+    // FLASHCARD FLIP & TOGGLE STAR
+    // ============================
+    flashcard.addEventListener('click', () => {
+      flashcard.classList.toggle('flipped');
+    });
+    starIcon.addEventListener('click', () => {
+      const card = history[currentIndex];
+      card.favorited = !card.favorited;
+      updateStarIcon(card.favorited);
+    });
+    function updateStarIcon(isFavorited) {
+      if (isFavorited) {
+        starIcon.innerHTML = '&#9733;';       // ★
+        starIcon.classList.add('favorited');
+      } else {
+        starIcon.innerHTML = '&#9734;';       // ☆
+        starIcon.classList.remove('favorited');
+      }
+    }
+
+    // =========================
+    // NAVIGATION BUTTONS
+    // =========================
+    prevBtn.addEventListener('click', () => {
+      if (currentIndex > 0) {
+        currentIndex--;
+        updateCardDisplay();
+        updateProgress();
+      }
+    });
+    nextBtn.addEventListener('click', () => {
+      drawNextCard();
+    });
+
+    // =========================
+    // UTILITY: SHUFFLE ARRAY
+    // =========================
+    function shuffleArray(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+  </script>
+</body>
+</html>
