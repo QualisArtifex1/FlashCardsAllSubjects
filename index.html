@@ -83,7 +83,11 @@
     .toast{position:fixed; bottom:14px; left:50%; transform:translateX(-50%); background:#111; color:#fff; padding:10px 14px; border-radius:999px; opacity:0; pointer-events:none; transition:opacity .2s, transform .2s; z-index:10}
     .toast.show{opacity:1; transform:translate(-50%, -6px)}
 
-    @media (max-width: 520px){ .card{height:240px} }
+    @media (max-width: 520px){
+      .card{height:240px}
+      /* ensure rating row stays visible on small screens */
+      .conf-row{position:relative}
+    }
   </style>
 </head>
 <body>
@@ -142,6 +146,13 @@
         <button id="next-btn" type="button">Next →</button>
       </div>
 
+      <div class="conf-row" id="ratings-row">
+        <button id="c-again" type="button" disabled>1 Again</button>
+        <button id="c-hard"  type="button" disabled>2 Hard</button>
+        <button id="c-good"  type="button" disabled>3 Good</button>
+        <button id="c-easy"  type="button" disabled>4 Easy</button>
+      </div>
+
       <div id="end-options" style="display:none; text-align:center; margin-top:12px">
         <p style="color:var(--muted); margin-bottom:10px">End of round!</p>
       </div>
@@ -175,14 +186,8 @@
   function stopDust(){ if(!dustCtx) return; if(dustRAF) cancelAnimationFrame(dustRAF); removeEventListener('resize',dustSize); dustCtx.clearRect(0,0,W,H); dustCtx=null; dustCanvas=null; motes=null; dustRAF=null; }
 
   /* ---------------- App State ---------------- */
-  let allCards=[];        // full deck
-  let ready=[];           // ready-for-review queue
-  let scheduled=[];       // {card, delay} queue (ticks each draw)
-  let history=[];         // linear review history
-  let currentIndex=-1;    // pointer into history
-  let reverseMode=false;
-  let awaitingRating=false;
-  let reviewCount=0;
+  let allCards=[]; let ready=[]; let scheduled=[]; let history=[]; let currentIndex=-1;
+  let reverseMode=false; let awaitingRating=false; let reviewCount=0;
 
   // Elements
   const importPanel=document.getElementById('import-panel');
@@ -210,6 +215,12 @@
 
   const themeSelect=document.getElementById('theme-select');
   const toastEl=document.getElementById('toast');
+
+  // Rating buttons
+  const cAgain=document.getElementById('c-again');
+  const cHard=document.getElementById('c-hard');
+  const cGood=document.getElementById('c-good');
+  const cEasy=document.getElementById('c-easy');
 
   // Utils
   function shuffle(arr){ for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]];} return arr }
@@ -264,12 +275,12 @@
     importPanel.style.display='none';
     studyPanel.style.display='block';
     flashcard.classList.remove('flipped');
-    enableConf(false);
+    enableConf(false); // disabled until reveal
     drawNext();
   }
 
   function buildInitialReady(){ return shuffle(allCards.slice()); }
-  function enableConf(on){ [cAgain,cHard,cGood,cEasy].forEach(b=>b.disabled=!on); }
+  function enableConf(on){ [cAgain,cHard,cGood,cEasy].forEach(b=>{ b.disabled=!on; }); }
 
   function tickSchedule(){ for(const s of scheduled){ s.delay=Math.max(0,s.delay-1) } }
 
@@ -310,6 +321,7 @@
     cardArea.style.display='none';
     navArea.style.display='none';
     endOptions.style.display='block';
+    enableConf(false);
   }
 
   function saveState(){
@@ -335,7 +347,7 @@
   flashcard.addEventListener('click', ()=>{
     flashcard.classList.toggle('flipped');
     awaitingRating=flashcard.classList.contains('flipped');
-    enableConf(awaitingRating);
+    enableConf(awaitingRating); // enable ratings after reveal
   });
   flashcard.addEventListener('keydown', (e)=>{
     if(e.code==='Space'){ e.preventDefault(); flashcard.click(); }
@@ -349,20 +361,13 @@
   shuffleBtn.addEventListener('click', ()=>{ ready=shuffle(ready); toast('Shuffled'); });
 
   function goToMainMenu(){
-    // Keep theme, clear study state and show import screen
     history=[]; currentIndex=-1; ready=[]; scheduled=[]; allCards=[];
     studyPanel.style.display='none';
     importPanel.style.display='block';
-    // Also stop the dust if user switches theme later
   }
-  const mainMenuBtnHandler = ()=> goToMainMenu();
-  mainMenuBtn.addEventListener('click', mainMenuBtnHandler);
+  mainMenuBtn.addEventListener('click', goToMainMenu);
 
   // Keyboard shortcuts for rating
-  const cAgain=document.getElementById('c-again');
-  const cHard=document.getElementById('c-hard');
-  const cGood=document.getElementById('c-good');
-  const cEasy=document.getElementById('c-easy');
   cAgain.addEventListener('click', ()=>rate('again'));
   cHard.addEventListener('click', ()=>rate('hard'));
   cGood.addEventListener('click', ()=>rate('good'));
@@ -383,18 +388,18 @@
 
   /* ---------------- Theme ---------------- */
   const THEME_KEY='qa_srs_theme';
-  function applyTheme(name){
+  function applyTheme(nameRaw){
+    const name = (nameRaw==='ancient'||nameRaw==='shamrock') ? nameRaw : 'ancient';
     document.body.classList.toggle('theme-ancient', name==='ancient');
-    themeSelect.value=name;
+    if(themeSelect){ themeSelect.value=name; }
     try{ localStorage.setItem(THEME_KEY,name);}catch{}
     if(name==='ancient'){ startDust(); toast('Theme: Ancient'); }
     else { stopDust(); toast('Theme: Shamrock'); }
   }
-  themeSelect.addEventListener('change', ()=> applyTheme(themeSelect.value));
-  // Default to Ancient if nothing saved
+  if(themeSelect){
+    themeSelect.addEventListener('change', ()=> applyTheme(themeSelect.value));
+  }
   applyTheme(localStorage.getItem(THEME_KEY) || 'ancient');
-
-  /* ---------------- Removed the auto self-tests that auto-imported a deck ---------------- */
 </script>
 </body>
 </html>
