@@ -2,30 +2,54 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Flashcards — SRS Confidence</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Flashcards — SRS Confidence (Shamrock & Ancient)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
   <style>
     :root{
       --primary:#4169e1; --primary-dark:#27408b; --bg:#f5f7fb; --panel:#ffffff; --text:#1f2a44; --muted:#64748b; --border:#e2e8f0;
       --again:#dc2626; --hard:#d97706; --good:#2563eb; --easy:#16a34a;
+      --radius:14px; --shadow:0 6px 20px rgba(0,0,0,.06);
+      --heading-font:'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      --body-font:'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      --card-front-bg:#fff; --card-back-bg:var(--primary); --card-border:var(--primary);
     }
-    *{box-sizing:border-box}
+    body.theme-ancient{
+      --primary:#8b4513; --primary-dark:#6f3710; --bg:#2b241d; --panel:linear-gradient(180deg,#fffaf0,#f4ead6); --text:#2e2a27; --muted:#5a4e45; --border:#d1b792;
+      --again:#9c2f2f; --hard:#c38c1d; --good:#2f5f96; --easy:#3a7a3a;
+      --radius:16px; --shadow:0 10px 28px rgba(0,0,0,.18);
+      --heading-font:'Cinzel', serif; --body-font:'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      --card-front-bg:linear-gradient(180deg,#fff8ea,#f5e7cc); --card-back-bg:linear-gradient(180deg,#ead7b5,#d9c29a); --card-border:#8b4513;
+    }
+
+    *,*::before,*::after{box-sizing:border-box}
     html,body{height:100%}
-    body{margin:0; font-family:Poppins, system-ui, -apple-system, Segoe UI, Roboto, Arial; background:var(--bg); color:var(--text); display:flex; align-items:flex-start; justify-content:center; padding:16px}
-    .app{width:min(900px,100%); display:grid; gap:16px}
+    body{margin:0; font-family:var(--body-font); background:var(--bg); color:var(--text); display:flex; align-items:flex-start; justify-content:center; padding:16px; overflow-x:hidden}
 
-    .panel{background:var(--panel); border:1px solid var(--border); border-radius:14px; box-shadow:0 6px 20px rgba(0,0,0,.06); padding:16px}
-    h1,h2{margin:.2rem 0 1rem; font-weight:600; text-align:center}
+    .bg{position:fixed; inset:0; z-index:0; overflow:hidden; display:none}
+    body.theme-ancient .bg{display:block}
+    .bg img{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:110%; height:auto; max-height:110%; object-fit:contain; filter:contrast(1.02) saturate(0.95)}
+    .vignette,.grain,.torch{position:absolute; inset:0; pointer-events:none}
+    .vignette{z-index:1; background:radial-gradient(120vmax 80vmax at 50% 55%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.35) 100%); mix-blend-mode:multiply}
+    .grain{z-index:2; opacity:.18; mix-blend-mode:overlay; background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.55'/></svg>"); background-size:140px 140px; animation:grainShift 9s linear infinite}
+    @keyframes grainShift{from{transform:translate3d(0,0,0)} to{transform:translate3d(-140px,-140px,0)}}
+    .torch{z-index:3; --x:50%; --y:40%; --r1:10vmin; --r2:40vmin; background:radial-gradient(circle at var(--x) var(--y), rgba(255,240,200,0.20) 0, rgba(255,215,160,0.12) var(--r1), rgba(0,0,0,0) var(--r2)); mix-blend-mode:soft-light; animation:torchFlicker 2.4s ease-in-out infinite}
+    @keyframes torchFlicker{0%{filter:brightness(1) blur(.1px)}50%{filter:brightness(1.06) blur(.2px)}100%{filter:brightness(1) blur(.1px)}}
+    canvas#dust{position:absolute; inset:0; z-index:4; pointer-events:none; mix-blend-mode:screen}
 
-    button{appearance:none; border:none; border-radius:10px; padding:10px 14px; font-weight:600; cursor:pointer; color:#fff; background:var(--primary); transition:transform .08s ease, background .2s ease; box-shadow:0 2px 10px rgba(65,105,225,.25)}
+    .app{position:relative; z-index:5; width:min(900px,100%); display:grid; gap:16px}
+
+    .panel{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px}
+    h1,h2{margin:.2rem 0 1rem; font-weight:700; text-align:center; font-family:var(--heading-font); color:var(--primary)}
+
+    button{appearance:none; border:none; border-radius:10px; padding:10px 14px; font-weight:700; cursor:pointer; color:#fff; background:var(--primary); transition:transform .08s ease, background .2s ease; box-shadow:0 2px 10px rgba(0,0,0,.12)}
     button:hover{background:var(--primary-dark)}
     button:active{transform:translateY(1px)}
     .btn-outline{background:#fff; color:var(--primary); border:1px solid var(--primary); box-shadow:none}
     .btn-ghost{background:transparent; color:var(--muted); border:1px dashed var(--border)}
 
     .switch{display:inline-flex; gap:8px; align-items:center; padding:6px 10px; border-radius:999px; border:1px solid var(--border); background:#fff; color:var(--text); font-weight:600}
-    .switch input{accent-color:var(--primary)}
+    select.theme-select{appearance:none; padding:6px 12px; border-radius:10px; border:1px solid var(--border); background:#fff; font-weight:700; color:var(--primary); cursor:pointer}
 
     #import-text{width:100%; min-height:180px; resize:vertical; padding:10px; border:2px solid var(--primary); border-radius:10px; font-size:16px}
     #import-note{color:var(--muted); text-align:center; margin:.5rem 0 1rem}
@@ -41,8 +65,8 @@
     .card-container{perspective:1200px; margin:10px auto}
     .card{width:min(520px, 96vw); height:300px; margin-inline:auto; border-radius:16px; position:relative; transform-style:preserve-3d; transition:transform .6s; cursor:pointer}
     .card.flipped{transform:rotateY(180deg)}
-    .card-side{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; text-align:center; padding:18px; border:2px solid var(--primary); border-radius:16px; background:#fff; box-shadow:0 10px 28px rgba(0,0,0,.08); backface-visibility:hidden; font-size:clamp(18px, 3.2vw, 26px); font-weight:600}
-    .card-side.back{transform:rotateY(180deg); background:var(--primary); color:#fff}
+    .card-side{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; text-align:center; padding:18px; border:2px solid var(--card-border); border-radius:16px; background:var(--card-front-bg); box-shadow:var(--shadow); backface-visibility:hidden; font-size:clamp(18px, 3.2vw, 26px); font-weight:700}
+    .card-side.back{transform:rotateY(180deg); background:var(--card-back-bg); color:#111}
 
     #star-container{margin:8px 0; text-align:center}
     .star{font-size:26px; color:#c9c9c9; cursor:pointer; user-select:none; transition:transform .08s ease, color .2s}
@@ -58,15 +82,24 @@
     #c-easy{background:var(--easy)}
     .conf-row button:disabled{opacity:.6; cursor:not-allowed}
 
-    .dark{--bg:#0b1220; --panel:#0f172a; --text:#e5e7eb; --muted:#94a3b8; --border:#1e293b}
     .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; background:#111827; color:#f9fafb; padding:2px 6px; border-radius:6px; font-size:12px}
+
+    .toast{position:fixed; bottom:14px; left:50%; transform:translateX(-50%); background:#111; color:#fff; padding:10px 14px; border-radius:999px; opacity:0; pointer-events:none; transition:opacity .2s, transform .2s; z-index:10}
+    .toast.show{opacity:1; transform:translate(-50%, -6px)}
 
     @media (max-width: 520px){ .card{height:240px} }
   </style>
 </head>
 <body>
+  <div class="bg" aria-hidden="true">
+    <img src="qualis-artifex-logo.png" alt="" />
+    <div class="vignette"></div>
+    <div class="grain"></div>
+    <div class="torch"></div>
+    <canvas id="dust"></canvas>
+  </div>
+
   <div class="app">
-    <!-- Import Panel -->
     <div id="import-panel" class="panel" aria-labelledby="import-title">
       <h1 id="import-title">Import Flashcard Data</h1>
       <p id="import-note">Paste two columns (Front ↔ Back). Tabs preferred, commas ok. One card per line.
@@ -78,16 +111,18 @@
       </div>
     </div>
 
-    <!-- Study Panel -->
     <div id="study-panel" class="panel" aria-labelledby="study-title">
       <h2 id="study-title">Study</h2>
       <div class="toolbar" role="group" aria-label="Study controls">
-        <span class="switch"><input type="checkbox" id="reverse-switch"/> <label for="reverse-switch">Reverse (Back→Front)</label></span>
-        <span class="switch"><input type="checkbox" id="star-filter"/> <label for="star-filter">Only ★</label></span>
+        <label class="switch"><input type="checkbox" id="reverse-switch"/> <span>Reverse (Back→Front)</span></label>
+        <label class="switch"><input type="checkbox" id="star-filter"/> <span>Only ★</span></label>
         <button class="btn-outline" id="shuffle-btn" type="button">Shuffle Ready</button>
         <button class="btn-outline" id="restart-btn" type="button">Restart</button>
         <button class="btn-outline" id="main-menu-btn" type="button">Main Menu</button>
-        <button class="btn-ghost" id="dark-btn" type="button" title="Toggle dark mode">🌙</button>
+        <select id="theme-select" class="theme-select" aria-label="Theme">
+          <option value="shamrock">Shamrock</option>
+          <option value="ancient">Ancient</option>
+        </select>
       </div>
 
       <div class="progress-wrap" aria-live="polite">
@@ -128,241 +163,70 @@
     </div>
   </div>
 
-  <script>
-    // ================================
-    // State
-    // ================================
-    let allCards = [];              // [{id, front, back, favorited, ease, interval}]
-    let ready = [];                 // cards ready to draw
-    let scheduled = [];             // [{card, delay}] delay = cards to wait before re-show
-    let history = [];               // order we showed
-    let currentIndex = -1;          // pointer in history
-    let reverseMode = false;        // back->front
-    let useStarsOnly = false;       // filter toggle
-    let awaitingRating = false;     // after flip, require rating before proceeding
-    let reviewCount = 0;            // total reviews shown
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-    // DOM
-    const importPanel = document.getElementById('import-panel');
-    const studyPanel  = document.getElementById('study-panel');
-    const importText  = document.getElementById('import-text');
-    const importBtn   = document.getElementById('import-btn');
-    const sampleBtn   = document.getElementById('sample-btn');
+<script>
+  let dustCtx = null, dustCanvas = null, dustRAF = null, motes = null, dpr = 1; let W = 0, H = 0;
+  function dustSize(){ if(!dustCanvas || !dustCtx) return; dpr=Math.min(window.devicePixelRatio||1,2); W=innerWidth; H=innerHeight; dustCanvas.width=W*dpr; dustCanvas.height=H*dpr; dustCtx.setTransform(dpr,0,0,dpr,0,0); }
+  function startDust(){ if(dustCtx) return; dustCanvas=document.getElementById('dust'); if(!dustCanvas) return; dustCtx=dustCanvas.getContext('2d'); motes=[]; dustSize(); addEventListener('resize',dustSize); const N=90; function reset(p){ p.x=Math.random()*W; p.y=Math.random()*H; p.r=Math.random()*2.0+0.7; p.a=Math.random()*Math.PI*2; p.s=(Math.random()*0.3+0.05); p.o=Math.random()*0.35+0.25; p.color=Math.random()>0.5?'#fff7d6':'#fceabb'; } for(let i=0;i<N;i++){ let p={}; reset(p); motes.push(p);} (function tick(){ if(!dustCtx) return; dustCtx.clearRect(0,0,W,H); for(const p of motes){ p.a+=(Math.random()-0.5)*0.05; p.x+=Math.cos(p.a)*p.s; p.y+=Math.sin(p.a)*p.s*0.6; if(p.x<-10||p.x>W+10||p.y<-10||p.y>H+10){ reset(p);} dustCtx.globalAlpha=p.o; dustCtx.beginPath(); dustCtx.arc(p.x,p.y,p.r,0,Math.PI*2); dustCtx.closePath(); dustCtx.fillStyle=p.color; dustCtx.shadowBlur=10; dustCtx.shadowColor=p.color; dustCtx.fill(); dustCtx.shadowBlur=0;} dustRAF=requestAnimationFrame(tick); })(); }
+  function stopDust(){ if(!dustCtx) return; if(dustRAF) cancelAnimationFrame(dustRAF); removeEventListener('resize',dustSize); dustCtx.clearRect(0,0,W,H); dustCtx=null; dustCanvas=null; motes=null; dustRAF=null; }
 
-    const progressInfo = document.getElementById('progress-info');
-    const barFill      = document.getElementById('bar-fill');
+  let allCards = []; let ready = []; let scheduled = []; let history = []; let currentIndex = -1; let reverseMode = false; let useStarsOnly = false; let awaitingRating = false; let reviewCount = 0;
 
-    const flashcard    = document.getElementById('flashcard');
-    const frontEl      = document.getElementById('card-front');
-    const backEl       = document.getElementById('card-back');
+  const importPanel=document.getElementById('import-panel'); const studyPanel=document.getElementById('study-panel'); const importText=document.getElementById('import-text'); const importBtn=document.getElementById('import-btn'); const sampleBtn=document.getElementById('sample-btn');
+  const progressInfo=document.getElementById('progress-info'); const barFill=document.getElementById('bar-fill'); const flashcard=document.getElementById('flashcard'); const frontEl=document.getElementById('card-front'); const backEl=document.getElementById('card-back');
+  const starIcon=document.getElementById('star-icon'); const prevBtn=document.getElementById('prev-btn'); const nextBtn=document.getElementById('next-btn'); const cardArea=document.getElementById('card-area'); const navArea=document.getElementById('nav-area'); const endOptions=document.getElementById('end-options');
+  const restartBtn=document.getElementById('restart-btn'); const mainMenuBtn=document.getElementById('main-menu-btn'); const studyStarsBtn=document.getElementById('study-stars-btn'); const reverseSwitch=document.getElementById('reverse-switch'); const starFilter=document.getElementById('star-filter'); const shuffleBtn=document.getElementById('shuffle-btn');
+  const themeSelect=document.getElementById('theme-select'); const toastEl=document.getElementById('toast');
 
-    const starIcon     = document.getElementById('star-icon');
-    const prevBtn      = document.getElementById('prev-btn');
-    const nextBtn      = document.getElementById('next-btn');
-    const cardArea     = document.getElementById('card-area');
-    const navArea      = document.getElementById('nav-area');
-    const endOptions   = document.getElementById('end-options');
+  function shuffle(arr){ for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]];} return arr }
+  function djb2(str){let h=5381; for(let i=0;i<str.length;i++){ h=((h<<5)+h)+str.charCodeAt(i); h|=0 } return h.toString(36) }
+  function deckIdFrom(cards){ return djb2(cards.map(c=>c.front+'\u241f'+c.back).join('\u241e')) }
+  function setProgress(){ const uniqueSeen=new Set(history.map(c=>c.id)).size; progressInfo.textContent=`${reviewCount} reviews • ${uniqueSeen} unique of ${allCards.length}`; const pct=allCards.length?Math.round((uniqueSeen/allCards.length)*100):0; barFill.style.width=pct+"%"; }
+  function updateStarUI(on){ starIcon.textContent=on?'★':'☆'; starIcon.classList.toggle('favorited',!!on); }
+  function current(){ return history[currentIndex]; }
+  function toast(msg){ toastEl.textContent=msg; toastEl.classList.add('show'); setTimeout(()=>toastEl.classList.remove('show'),1200); }
+  function loadDeckState(deckId){ try{ return JSON.parse(localStorage.getItem('deck:'+deckId)||'{}') }catch{ return {} } }
+  function saveDeckState(deckId, state){ localStorage.setItem('deck:'+deckId, JSON.stringify(state)); }
 
-    const restartBtn   = document.getElementById('restart-btn');
-    const mainMenuBtn  = document.getElementById('main-menu-btn');
-    const studyStarsBtn= document.getElementById('study-stars-btn');
-    const reverseSwitch= document.getElementById('reverse-switch');
-    const starFilter   = document.getElementById('star-filter');
-    const shuffleBtn   = document.getElementById('shuffle-btn');
-    const darkBtn      = document.getElementById('dark-btn');
+  sampleBtn.addEventListener('click', ()=>{ importText.value=['amo\tI love','laudo\tI praise','porto\tI carry','puella\tgirl','rosa\trose'].join('\n'); importText.focus(); });
+  importBtn.addEventListener('click', ()=>{ const raw=importText.value.trim(); if(!raw){ alert('Please paste some two-column data first.'); return;} const lines=raw.split(/\r?\n/).filter(l=>l.trim()); const parsed=lines.map(line=>{ let parts=line.split('\t'); if(parts.length<2){parts=line.split(',')} return {front:(parts[0]||'').trim(), back:parts.slice(1).join(',').trim()} }).filter(x=>x.front&&x.back); if(!parsed.length){ alert('No valid lines found. Each line needs at least two columns.'); return;} const id=deckIdFrom(parsed); const saved=loadDeckState(id); allCards=parsed.map(({front,back})=>{ const cid=djb2(front+'\u241f'+back); const savedCard=(saved.cards||{})[cid]||{}; return { id:cid, front, back, favorited:!!savedCard.favorited, ease:savedCard.ease??2.5, interval:savedCard.interval??0 }; }); startStudy(id, saved); });
 
-    const btnAgain = document.getElementById('c-again');
-    const btnHard  = document.getElementById('c-hard');
-    const btnGood  = document.getElementById('c-good');
-    const btnEasy  = document.getElementById('c-easy');
+  let deckId=null; let deckSaved=null;
+  function startStudy(id, saved){ deckId=id; deckSaved=saved||{}; useStarsOnly=false; reviewCount=0; awaitingRating=false; history=[]; currentIndex=-1; scheduled=[]; ready=buildInitialReady(); importPanel.style.display='none'; studyPanel.style.display='block'; flashcard.classList.remove('flipped'); enableConf(false); drawNext(); }
+  function buildInitialReady(){ const base=useStarsOnly?allCards.filter(c=>c.favorited):allCards.slice(); return shuffle(base); }
+  function enableConf(on){ [cAgain,cHard,cGood,cEasy].forEach(b=>b.disabled=!on); }
+  function tickSchedule(){ for(const s of scheduled){ s.delay=Math.max(0,s.delay-1) } }
+  function popReadyCard(){ if(ready.length>0){ return ready.splice(Math.floor(Math.random()*ready.length),1)[0]; } const due=scheduled.filter(s=>s.delay<=0).map(s=>s.card); scheduled=scheduled.filter(s=>s.delay>0); if(due.length){ ready.push(...due); return popReadyCard(); } return null; }
+  function drawNext(){ if(awaitingRating) return; if(currentIndex<history.length-1){ currentIndex++; updateDisplay(); setProgress(); return;} const next=popReadyCard(); if(!next){ endOfRound(); return;} tickSchedule(); history.push(next); currentIndex=history.length-1; reviewCount++; updateDisplay(); setProgress(); }
+  function updateDisplay(){ const c=current(); if(!c) return; flashcard.classList.remove('flipped'); frontEl.textContent=reverseMode?c.back:c.front; backEl.textContent=reverseMode?c.front:c.back; updateStarUI(c.favorited); endOptions.style.display='none'; cardArea.style.display='block'; navArea.style.display='flex'; starIcon.style.display='inline-block'; enableConf(false); awaitingRating=false; }
+  function endOfRound(){ cardArea.style.display='none'; navArea.style.display='none'; starIcon.style.display='none'; endOptions.style.display='block'; }
+  function saveState(){ const obj={cards:{}}; for(const c of allCards){ obj.cards[c.id]={favorited:c.favorited, ease:c.ease, interval:c.interval} } localStorage.setItem('deck:'+deckId, JSON.stringify(obj)); }
+  function rate(choice){ const c=current(); if(!c) return; if(choice==='again'){ c.ease=Math.max(1.3,(c.ease||2.5)-0.20); c.interval=1; } else if(choice==='hard'){ c.ease=Math.max(1.3,(c.ease||2.5)-0.05); c.interval=Math.max(2,Math.round((c.interval||0)*1.2)||2); } else if(choice==='good'){ const e=c.ease||2.5; c.interval=Math.max(3,Math.round((c.interval||1)*e)||5); } else if(choice==='easy'){ c.ease=(c.ease||2.5)+0.05; const e=c.ease+0.15; c.interval=Math.max(5,Math.round((c.interval||1)*e)||10); } scheduled.push({card:c,delay:c.interval}); saveState(); awaitingRating=false; enableConf(false); drawNext(); }
 
-    // ================================
-    // Utilities
-    // ================================
-    function shuffle(arr){ for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]];} return arr }
-    function djb2(str){let h=5381; for(let i=0;i<str.length;i++){ h=((h<<5)+h)+str.charCodeAt(i); h|=0 } return h.toString(36) }
+  flashcard.addEventListener('click', ()=>{ flashcard.classList.toggle('flipped'); awaitingRating=flashcard.classList.contains('flipped'); enableConf(awaitingRating); });
+  flashcard.addEventListener('keydown', (e)=>{ if(e.code==='Space'){ e.preventDefault(); flashcard.click(); } });
+  starIcon.addEventListener('click', ()=>{ const c=current(); if(!c) return; c.favorited=!c.favorited; updateStarUI(c.favorited); saveState(); });
+  prevBtn.addEventListener('click', ()=>{ if(currentIndex>0 && !awaitingRating){ currentIndex--; updateDisplay(); setProgress(); }});
+  nextBtn.addEventListener('click', ()=>{ drawNext(); });
+  studyStarsBtn.addEventListener('click', ()=>{ useStarsOnly=true; ready=buildInitialReady(); history=[]; currentIndex=-1; scheduled=[]; reviewCount=0; drawNext(); });
+  restartBtn.addEventListener('click', ()=>{ ready=buildInitialReady(); history=[]; currentIndex=-1; scheduled=[]; reviewCount=0; drawNext(); });
+  mainMenuBtn.addEventListener('click', ()=>{ location.reload(); });
+  reverseSwitch.addEventListener('change', e=>{ reverseMode=e.target.checked; updateDisplay(); });
+  starFilter.addEventListener('change', e=>{ useStarsOnly=e.target.checked; ready=buildInitialReady(); history=[]; currentIndex=-1; scheduled=[]; reviewCount=0; drawNext(); });
+  shuffleBtn.addEventListener('click', ()=>{ ready=shuffle(ready); toast('Shuffled'); });
 
-    function deckIdFrom(cards){ return djb2(cards.map(c=>c.front+'\u241f'+c.back).join('\u241e')) }
+  const cAgain=document.getElementById('c-again'); const cHard=document.getElementById('c-hard'); const cGood=document.getElementById('c-good'); const cEasy=document.getElementById('c-easy');
+  cAgain.addEventListener('click', ()=>rate('again')); cHard.addEventListener('click', ()=>rate('hard')); cGood.addEventListener('click', ()=>rate('good')); cEasy.addEventListener('click', ()=>rate('easy'));
+  window.addEventListener('keydown', (e)=>{ if(studyPanel.style.display!=='block') return; if(['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) return; if(awaitingRating){ if(e.key==='1') rate('again'); else if(e.key==='2') rate('hard'); else if(e.key==='3') rate('good'); else if(e.key==='4') rate('easy'); } else { if(e.code==='Space'){ e.preventDefault(); flashcard.click(); } } });
 
-    function setProgress(){
-      const uniqueSeen = new Set(history.map(c=>c.id)).size;
-      progressInfo.textContent = `${reviewCount} reviews • ${uniqueSeen} unique of ${allCards.length}`;
-      const pct = allCards.length ? Math.round((uniqueSeen/allCards.length)*100) : 0;
-      barFill.style.width = pct+"%";
-    }
+  const THEME_KEY='qa_srs_theme';
+  function applyTheme(name){ document.body.classList.toggle('theme-ancient', name==='ancient'); themeSelect.value=name; try{ localStorage.setItem(THEME_KEY,name);}catch{} if(name==='ancient'){ startDust(); toast('Theme: Ancient'); } else { stopDust(); toast('Theme: Shamrock'); } }
+  themeSelect.addEventListener('change', ()=> applyTheme(themeSelect.value));
+  // Default to Ancient if nothing saved
+  applyTheme(localStorage.getItem(THEME_KEY) || 'ancient');
 
-    function updateStarUI(on){ starIcon.textContent = on ? '★' : '☆'; starIcon.classList.toggle('favorited', !!on); }
-    function current(){ return history[currentIndex]; }
-
-    // Persist stars + SRS state per deck
-    function loadDeckState(deckId){
-      try{ return JSON.parse(localStorage.getItem('deck:'+deckId) || '{}') }catch{ return {} }
-    }
-    function saveDeckState(deckId, state){ localStorage.setItem('deck:'+deckId, JSON.stringify(state)); }
-
-    // ================================
-    // Import
-    // ================================
-    sampleBtn.addEventListener('click', ()=>{
-      importText.value = [ 'amo\tI love', 'laudo\tI praise', 'porto\tI carry', 'puella\tgirl', 'rosa\trose' ].join('\n');
-      importText.focus();
-    });
-
-    importBtn.addEventListener('click', ()=>{
-      const raw = importText.value.trim();
-      if(!raw){ alert('Please paste some two‑column data first.'); return; }
-      const lines = raw.split(/\r?\n/).filter(l=>l.trim());
-      const parsed = lines.map(line=>{ let parts=line.split('\t'); if(parts.length<2){parts=line.split(',')} return {front:(parts[0]||'').trim(), back:parts.slice(1).join(',').trim()} }).filter(x=>x.front && x.back);
-      if(!parsed.length){ alert('No valid lines found. Each line needs at least two columns.'); return; }
-
-      const deckId = deckIdFrom(parsed);
-      const saved = loadDeckState(deckId);
-
-      allCards = parsed.map(({front,back})=>{
-        const id = djb2(front+'\u241f'+back);
-        const savedCard = (saved.cards||{})[id] || {};
-        return { id, front, back, favorited: !!savedCard.favorited, ease: savedCard.ease ?? 2.5, interval: savedCard.interval ?? 0 };
-      });
-
-      startStudy(deckId, saved);
-    });
-
-    // ================================
-    // Study lifecycle
-    // ================================
-    let deckId = null; let deckSaved = null;
-
-    function startStudy(id, saved){
-      deckId = id; deckSaved = saved || {};
-      useStarsOnly = false; reviewCount = 0; awaitingRating=false; history=[]; currentIndex=-1; scheduled=[];
-      ready = buildInitialReady();
-
-      importPanel.style.display='none';
-      studyPanel.style.display='block';
-      flashcard.classList.remove('flipped');
-      enableConf(false);
-      drawNext();
-    }
-
-    function buildInitialReady(){
-      const base = useStarsOnly ? allCards.filter(c=>c.favorited) : allCards.slice();
-      return shuffle(base);
-    }
-
-    function enableConf(on){ [btnAgain,btnHard,btnGood,btnEasy].forEach(b=>b.disabled=!on); }
-
-    // Advance scheduled delays by one card shown
-    function tickSchedule(){ for(const s of scheduled){ s.delay = Math.max(0, s.delay-1) } }
-
-    function popReadyCard(){
-      if(ready.length>0){ return ready.splice(Math.floor(Math.random()*ready.length),1)[0]; }
-      // bring due scheduled into ready
-      const due = scheduled.filter(s=>s.delay<=0).map(s=>s.card);
-      scheduled = scheduled.filter(s=>s.delay>0);
-      if(due.length){ ready.push(...due); return popReadyCard(); }
-      return null;
-    }
-
-    function drawNext(){
-      if(awaitingRating) return; // must rate current card
-
-      // If we have history ahead (after Previous), step forward without changing schedule
-      if(currentIndex < history.length-1){ currentIndex++; updateDisplay(); setProgress(); return; }
-
-      // normal path
-      const next = popReadyCard();
-      if(!next){ endOfRound(); return; }
-      tickSchedule();
-      history.push(next); currentIndex = history.length-1; reviewCount++;
-      updateDisplay(); setProgress();
-    }
-
-    function updateDisplay(){
-      const c = current(); if(!c) return;
-      flashcard.classList.remove('flipped');
-      frontEl.textContent = reverseMode ? c.back : c.front;
-      backEl.textContent  = reverseMode ? c.front : c.back;
-      updateStarUI(c.favorited);
-      endOptions.style.display='none'; cardArea.style.display='block'; navArea.style.display='flex'; starIcon.style.display='inline-block';
-      enableConf(false); awaitingRating=false; // not flipped yet
-    }
-
-    function endOfRound(){ cardArea.style.display='none'; navArea.style.display='none'; starIcon.style.display='none'; endOptions.style.display='block'; }
-
-    function saveState(){
-      const obj = { cards:{} };
-      for(const c of allCards){ obj.cards[c.id] = { favorited:c.favorited, ease:c.ease, interval:c.interval } }
-      saveDeckState(deckId, obj);
-    }
-
-    // ================================
-    // Rating logic (Anki‑style simplified)
-    // ================================
-    function rate(choice){
-      const c = current(); if(!c) return;
-      // update ease/interval
-      if(choice==='again'){ c.ease = Math.max(1.3, (c.ease||2.5) - 0.20); c.interval = 1; }
-      else if(choice==='hard'){ c.ease = Math.max(1.3, (c.ease||2.5) - 0.05); c.interval = Math.max(2, Math.round((c.interval||0)*1.2) || 2); }
-      else if(choice==='good'){ const e=c.ease||2.5; c.interval = Math.max(3, Math.round((c.interval||1)*e) || 5); }
-      else if(choice==='easy'){ c.ease = (c.ease||2.5) + 0.05; const e=c.ease+0.15; c.interval = Math.max(5, Math.round((c.interval||1)*e) || 10); }
-
-      // schedule back into future draws
-      scheduled.push({ card:c, delay:c.interval });
-      saveState();
-
-      awaitingRating=false; enableConf(false); drawNext();
-    }
-
-    // ================================
-    // Events
-    // ================================
-    flashcard.addEventListener('click', ()=>{ flashcard.classList.toggle('flipped'); awaitingRating = flashcard.classList.contains('flipped'); enableConf(awaitingRating); });
-    flashcard.addEventListener('keydown', (e)=>{ if(e.code==='Space'){ e.preventDefault(); flashcard.click(); } });
-
-    starIcon.addEventListener('click', ()=>{ const c=current(); if(!c) return; c.favorited=!c.favorited; updateStarUI(c.favorited); saveState(); });
-
-    prevBtn.addEventListener('click', ()=>{ if(currentIndex>0 && !awaitingRating){ currentIndex--; updateDisplay(); setProgress(); }});
-    nextBtn.addEventListener('click', ()=>{ drawNext(); });
-
-    document.getElementById('study-stars-btn').addEventListener('click', ()=>{ useStarsOnly=true; ready=buildInitialReady(); history=[]; currentIndex=-1; scheduled=[]; reviewCount=0; drawNext(); });
-    restartBtn.addEventListener('click', ()=>{ ready=buildInitialReady(); history=[]; currentIndex=-1; scheduled=[]; reviewCount=0; drawNext(); });
-    mainMenuBtn.addEventListener('click', ()=>{ location.reload(); });
-
-    reverseSwitch.addEventListener('change', e=>{ reverseMode = e.target.checked; updateDisplay(); });
-    starFilter.addEventListener('change', e=>{ useStarsOnly = e.target.checked; ready=buildInitialReady(); history=[]; currentIndex=-1; scheduled=[]; reviewCount=0; drawNext(); });
-    shuffleBtn.addEventListener('click', ()=>{ ready = shuffle(ready); });
-
-    // Confidence buttons
-    btnAgain.addEventListener('click', ()=>rate('again'));
-    btnHard .addEventListener('click', ()=>rate('hard'));
-    btnGood .addEventListener('click', ()=>rate('good'));
-    btnEasy .addEventListener('click', ()=>rate('easy'));
-
-    // Hotkeys: 1/2/3/4 for rating when flipped
-    window.addEventListener('keydown', (e)=>{
-      if(studyPanel.style.display!=='block') return;
-      if(['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) return;
-      if(awaitingRating){
-        if(e.key==='1') rate('again');
-        else if(e.key==='2') rate('hard');
-        else if(e.key==='3') rate('good');
-        else if(e.key==='4') rate('easy');
-      } else {
-        if(e.code==='Space'){ e.preventDefault(); flashcard.click(); }
-      }
-    });
-
-    // Touch swipe (mobile)
-    let startX=null; flashcard.addEventListener('touchstart', e=>{ startX = e.changedTouches[0].clientX }, {passive:true});
-    flashcard.addEventListener('touchend', e=>{
-      if(startX===null) return; const dx = e.changedTouches[0].clientX - startX; startX=null;
-      if(Math.abs(dx) < 40){ flashcard.click(); return; }
-      if(dx>0){ if(currentIndex>0 && !awaitingRating){ currentIndex--; updateDisplay(); setProgress(); } }
-      else{ if(!awaitingRating) drawNext(); }
-    }, {passive:true});
-
-    // Dark mode toggle
-    const root = document.documentElement; darkBtn.addEventListener('click', ()=>{ root.classList.toggle('dark'); });
-  </script>
+  try{ console.group('%cSelf-tests','color:#8b4513;font-weight:bold'); const prev=document.body.classList.contains('theme-ancient'); applyTheme('ancient'); console.assert(document.body.classList.contains('theme-ancient'), 'Ancient theme applied'); applyTheme(prev?'ancient':'shamrock'); console.assert(typeof dustCtx==='object'||dustCtx===null,'dustCtx ok'); importText.value='amo\tI love\npuella\tgirl'; importBtn.click(); console.assert(studyPanel.style.display==='block','Study visible after import'); console.assert(document.querySelector('#flashcard'),'Flashcard exists'); console.groupEnd(); }catch(e){ console.warn('Self-tests issue:', e); }
+</script>
 </body>
 </html>
